@@ -48,6 +48,38 @@ func ListAllInstances(configProvider common.ConfigurationProvider, tenancyID str
 	return instances, nil
 }
 
+func ListAllBootVolumes(configProvider common.ConfigurationProvider, tenancyID string, availabilityDomain string) ([]core.BootVolume, error) {
+	var bootVolumes []core.BootVolume
+
+	computeClient, err := core.NewBlockstorageClientWithConfigurationProvider(configProvider)
+	if err != nil {
+		log.Fatalf("Error creating OCI client: %v", err)
+		return nil, err
+	}
+
+	request := core.ListBootVolumesRequest{
+		CompartmentId:      common.String(tenancyID),
+		AvailabilityDomain: common.String(availabilityDomain),
+	}
+
+	for {
+		response, err := computeClient.ListBootVolumes(context.Background(), request)
+		if err != nil {
+			return nil, err
+		}
+
+		bootVolumes = append(bootVolumes, response.Items...)
+
+		if response.OpcNextPage == nil {
+			break
+		}
+
+		request.Page = response.OpcNextPage
+	}
+
+	return bootVolumes, nil
+}
+
 func ListAllLoadBalancers(configProvider common.ConfigurationProvider, tenancyID string) ([]loadbalancer.LoadBalancer, error) {
 	var loadBalancers []loadbalancer.LoadBalancer
 

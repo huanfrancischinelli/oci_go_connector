@@ -72,6 +72,32 @@ func main() {
 			}
 		}
 
+		// AVAILABILITY DOMAINS
+		fmt.Println("Availability Domains:")
+		availabilityDomains, err := functions.ListAvailabilityDomains(configProvider, tenancyID)
+		if err != nil {
+			log.Fatalf("Error fetching Buckets: %v", err)
+			os.Exit(1)
+		}
+
+		for _, availabilityDomain := range availabilityDomains {
+			fmt.Printf("  Name: %s, ID: %s\n", *availabilityDomain.Name, *availabilityDomain.Id)
+		}
+
+		// BOOT VOLUMES
+		fmt.Println("Boot Volumes:")
+		for _, availabilityDomain := range availabilityDomains {
+			bootVolumes, err := functions.ListAllBootVolumes(configProvider, tenancyID, *availabilityDomain.Name)
+			if err != nil {
+				log.Fatalf("Error fetching Boot Volumes: %v", err)
+				os.Exit(1)
+			}
+
+			for _, bootVolume := range bootVolumes {
+				fmt.Printf("  Name: %s, Size: %d Gb, Availability Domain: %s, State: %s\n", *bootVolume.DisplayName, *bootVolume.SizeInGBs, *availabilityDomain.Name, bootVolume.LifecycleState)
+			}
+		}
+
 		// LOAD BALANCERS
 		fmt.Println("Load Balancers:")
 		loadBalancers, err := functions.ListAllLoadBalancers(configProvider, tenancyID)
@@ -110,18 +136,6 @@ func main() {
 		for _, bucket := range buckets {
 			fmt.Println(bucket)
 			fmt.Printf("  Name: %s, Created by: %s, Creation Date: %s\n", *bucket.Name, *bucket.CreatedBy, *bucket.TimeCreated)
-		}
-
-		// AVAILABILITY DOMAINS
-		fmt.Println("Availability Domains:")
-		availabilityDomains, err := functions.ListAvailabilityDomains(configProvider, tenancyID)
-		if err != nil {
-			log.Fatalf("Error fetching Buckets: %v", err)
-			os.Exit(1)
-		}
-
-		for _, availabilityDomain := range availabilityDomains {
-			fmt.Printf("  Name: %s, ID: %s\n", *availabilityDomain.Name, *availabilityDomain.Id)
 		}
 
 		// FILE SYSTEMS
